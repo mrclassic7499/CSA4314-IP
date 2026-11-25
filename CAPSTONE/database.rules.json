@@ -1,0 +1,60 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "systemStatus": {
+      ".read": true,
+      ".write": "auth != null && auth.token.admin === true"
+    },
+
+    "parkingLots": {
+      ".read": true,
+      ".write": "auth != null && auth.token.admin === true",
+      ".indexOn": ["city", "lotName"]
+    },
+
+    "parkingSlots": {
+      ".read": true,
+      ".write": "auth != null && auth.token.admin === true",
+      ".indexOn": ["lotId", "operationalStatus", "slotType"]
+    },
+
+    "slotReservations": {
+      ".read": true,
+      "$slotId": {
+        ".read": true,
+        ".write": "auth != null",
+        "$bookingId": {
+          ".validate": "newData.hasChildren(['slotId', 'startTime', 'endTime', 'status'])"
+        }
+      }
+    },
+
+    "bookings": {
+      ".read": "auth != null",
+      "$bookingId": {
+        ".read": "auth != null && (data.child('userId').val() === auth.uid || auth.token.admin === true || auth.token.attendant === true)",
+        ".write": "auth != null && (newData.child('userId').val() === auth.uid || auth.token.admin === true)",
+        ".indexOn": ["userId", "slotId", "bookingStatus", "startTime"]
+      }
+    },
+
+    "dashboardSummary": {
+      ".read": true,
+      ".write": "auth != null && auth.token.admin === true"
+    },
+
+    "historicalOccupancy": {
+      ".read": "auth != null && auth.token.admin === true",
+      ".write": false
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.admin === true)",
+        ".write": "auth != null && auth.token.admin === true"
+      }
+    }
+  }
+}
